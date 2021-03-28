@@ -16,6 +16,8 @@ library(tidyverse)
 library(openintro)
 library(Stat2Data)
 library(car)
+library(lme4)
+
 
 library(readr)
 asthma_pmlevel <- read_csv("asthmaAndPMLevelCombined.csv")
@@ -23,7 +25,7 @@ View(asthma_pmlevel)
 ```
 
 
-CRAN gives us a huge set of public packages, and happens to have some great packages that can be used in time series analysis. Since R already has basic time series installed, we will be using those to explore the data between the years of 2011 to 2016.
+CRAN gives us a huge set of public packages, and happens to have some great packages that can be used in time series analysis. Since R already has basic time series installed because of CRAN, we will be using those to explore the data between the years of 2011 to 2016. I also added the `lme4` library for multi-level analysis if possibly needed.
 
 ## Exploring the dataset
 
@@ -38,6 +40,9 @@ Above is general structure information about the data I am going to explore for 
 ```{r}
 summary(asthma_pmlevel)
 ```
+
+## Beginning Time Series Analysis
+
 First, I want to see if there is any association between the variables `Asthma` and `AvgPM2.5` separately with time between 2011 to 2016. 
 
 ```{r}
@@ -53,15 +58,44 @@ Above we are looking at two trend lines: the percent of adults with asthma and t
 
 * Next, looking at `average_pm` we see a decrease in numerical percentage of days above national levels for PM2.5 particles from 2011 to 2012, then a plateau between 2012 to 2014, then a sharp increase from 2014 to 2016.
 
+## More in-depth time series analysis
+
+
+
 ### Looking at asthma_pmlevel with states
+
 ```{r}
 per_state <- ggplot(asthma_pmlevel, aes(y = AvgPM2.5, x = Asthma, color = State)) +
                 geom_point() +
               geom_smooth(method = "lm")
 per_state
 ```
-This is a mess, and isn't helpful unless I wanted to see a trend for a specific state. That is not the focus of my project, but I did want to see if there were an averaged changes at state levels. (for fun)
+This is a mess, and isn't helpful unless I wanted to see a trend for a specific state. That is not the focus of my project, but I did want to see if there was an averaged change at state levels. (for fun) It is too hard to tell, so I will ignore the findings of this graphic.
+
+## More time series looking at Adult Asthma and Average PM2.5 days
 
 
 
+```{r}
+fit_pm <- HoltWinters(average_pm, gamma=FALSE)
+plot(fit_pm)
+
+fit_asthma <- HoltWinters(adult_asthma, gamma = FALSE)
+plot(fit_asthma)
+```
+
+Using time series analysis, we also should look at creating lag. A lag of time series is created when any given number of periods in time are shifted. This is because the state of a period back in the time-line could still be affecting the current state of the time series. This will allow us to see if an earlier year is affecting a later year in our time series.
+
+Below, I am looking at an autocorrelation for both `average_pm` and `adult_asthma` separately. The autocorrelation is looking at lag in itself for each variable to check for any correlation. Since both time series fall to 0 fairly quickly, we can assume that they are both stationary time series respectfully.
+
+```{r}
+acfRes_pm <- acf(average_pm)
+acfRes_asthma <- acf(adult_asthma)
+```
+
+Below, I am looking at cross-correlation between both `adult_asthma` and `average_pm` series at once, to see if there is any cross-correlation between the two time series.
+
+```{r}
+ccfRes <- ccf(adult_asthma, average_pm, ylab = "cross-correlation")
+```
 
