@@ -7,7 +7,7 @@ output: html_notebook
 
 # Introduction of project
 
-My goal of this time series analysis is to see if there is any correlation of national average PM2.5 levels and national adults reporting asthma between the years 2011 to 2016.
+My goal of this time series analysis is to see if there is any correlation of numerical percentage of national average PM2.5 levels and the numerical percentage of national adults currently reporting asthma between the years 2011 to 2016.
 
 ```{r}
 library(mosaic)
@@ -33,20 +33,35 @@ Since I am using time series analysis, I will need to upload and run a few packa
 str(asthma_pmlevel)
 ```
 
-Above is general structure information about the data I am going to explore for my time series analysis of adult asthma and air quality. Next, I ran the summary statistics of the dataset for each variable (as seen below). However, the three variables I want to focus on are `Year`, `Asthma%`, and `Avg PM2.5` for this analysis. 
+Above is general structure information about the data I am going to explore for my time series analysis of adult asthma and air quality. Next, I ran the summary statistics of the dataset for each variable (as seen below). However, the three variables I want to focus on are `Year`, `Asthma`, and `AvgPM2.5` for this analysis. 
 
 ```{r}
 summary(asthma_pmlevel)
 ```
-First, I want to see if there is any association between the variables `Asthma%` and `Avg PM2.5`. 
+First, I want to see if there is any association between the variables `Asthma` and `AvgPM2.5` separately with time between 2011 to 2016. 
 
 ```{r}
 adult_asthma <- ts(asthma_pmlevel$Asthma, start= 2011, end= 2016, frequency= 1)
 plot(adult_asthma)
+
 average_pm <- ts(asthma_pmlevel$AvgPM2.5, start = 2011, end = 2016, frequency = 1)
 plot(average_pm)
-
-#ggplot(asthma_pmlevel, aes(y = Asthma, x = AvgPM2.5)) +
-    #geom_point()
 ```
-Above we are looking at the percent of adults with asthma and the average days of PM2.5 levels above standard separately against time. 
+Above we are looking at two trend lines: the percent of adults with asthma and the average days of PM2.5 levels above standard separately against time. 
+
+* Starting with the `adult_asthma` plot, we see a positive trend across time that tells us the numerical percentage of adults with currently reported increased from 2011 to 2016.
+
+* Next, looking at `average_pm` we see a decrease in numerical percentage of days above national levels for PM2.5 particles from 2011 to 2012, then a plateau between 2012 to 2014, then a sharp increase from 2014 to 2016.
+
+### Looking at asthma_pmlevel with states
+```{r}
+per_state <- ggplot(asthma_pmlevel, aes(y = AvgPM2.5, x = Asthma, color = State)) +
+                geom_point() +
+              geom_smooth(method = "lm")
+per_state
+```
+This is a mess, and isn't helpful unless I wanted to see a trend for a specific state. That is not the focus of my project, but I did want to see if there were an averaged changes at state levels. (for fun)
+
+
+
+
