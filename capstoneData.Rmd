@@ -1,20 +1,52 @@
 ---
-title: "Capstone"
+title: "National Air Quality and Its Affects on Adult Asthma, A Time Series Analysis"
 name: "Rebecca Madsen"
 class: "DATA 470"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+# Introduction of project
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+My goal of this time series analysis is to see if there is any correlation of national average PM2.5 levels and national adults reporting asthma between the years 2011 to 2016.
 
 ```{r}
-str(asthmaAndPMLevelCombined)
+library(mosaic)
+library(broom)
+library(tidyverse)
+library(openintro)
+library(Stat2Data)
+library(car)
+
+library(readr)
+asthma_pmlevel <- read_csv("asthmaAndPMLevelCombined.csv")
+View(asthma_pmlevel)
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+CRAN gives us a huge set of public packages, and happens to have some great packages that can be used in time series analysis. Since R already has basic time series installed, we will be using those to explore the data between the years of 2011 to 2016.
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+## Exploring the dataset
+
+Since I am using time series analysis, I will need to upload and run a few packages to make this analysis possible.
+
+```{r}
+str(asthma_pmlevel)
+```
+
+Above is general structure information about the data I am going to explore for my time series analysis of adult asthma and air quality. Next, I ran the summary statistics of the dataset for each variable (as seen below). However, the three variables I want to focus on are `Year`, `Asthma%`, and `Avg PM2.5` for this analysis. 
+
+```{r}
+summary(asthma_pmlevel)
+```
+First, I want to see if there is any association between the variables `Asthma%` and `Avg PM2.5`. 
+
+```{r}
+adult_asthma <- ts(asthma_pmlevel$Asthma, start= 2011, end= 2016, frequency= 1)
+plot(adult_asthma)
+average_pm <- ts(asthma_pmlevel$AvgPM2.5, start = 2011, end = 2016, frequency = 1)
+plot(average_pm)
+
+#ggplot(asthma_pmlevel, aes(y = Asthma, x = AvgPM2.5)) +
+    #geom_point()
+```
+Above we are looking at the percent of adults with asthma and the average days of PM2.5 levels above standard separately against time. 
