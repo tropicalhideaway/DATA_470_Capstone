@@ -7,7 +7,7 @@ output: html_notebook
 
 # Introduction of project
 
-My goal of this time series analysis is to see if there is any correlation of numerical percentage of national average PM2.5 levels and the numerical percentage of national adults currently reporting asthma between the years 2011 to 2016.
+My goal of this time series analysis is to explore if there is any correlation between numerical percentage of national average PM2.5 levels and the numerical percentage of national adults currently reporting asthma between the years 2011 to 2016.
 
 ```{r}
 library(mosaic)
@@ -25,11 +25,11 @@ View(asthma_pmlevel)
 ```
 
 
-CRAN gives us a huge set of public packages, and happens to have some great packages that can be used in time series analysis. Since R already has basic time series installed because of CRAN, we will be using those to explore the data between the years of 2011 to 2016. I also added the `lme4` library for multi-level analysis if possibly needed.
+Since I am using time series analysis, I will need to upload and run a few packages to make this analysis possible. CRAN gives us a huge set of public packages, and happens to have some great packages that can be used in time series analysis. Since R already has basic time series installed because of CRAN, we will be using those to explore the data between the years of 2011 to 2016. I also added the `lme4` library for multi-level analysis if possibly needed.
 
 ## Exploring the dataset
 
-Since I am using time series analysis, I will need to upload and run a few packages to make this analysis possible.
+Below I am using some basic R codes to explore the dataset.
 
 ```{r}
 str(asthma_pmlevel)
@@ -61,7 +61,6 @@ Above we are looking at two trend lines: the percent of adults with asthma and t
 ## More in-depth time series analysis
 
 
-
 ### Looking at asthma_pmlevel with states
 
 ```{r}
@@ -74,7 +73,7 @@ This is a mess, and isn't helpful unless I wanted to see a trend for a specific 
 
 ## More time series looking at Adult Asthma and Average PM2.5 days
 
-
+Below I am using the `HoltWinters()` function to fit an exponential model to the variables `average_pm` and `adult_asthma` separately.
 
 ```{r}
 fit_pm <- HoltWinters(average_pm, gamma=FALSE)
@@ -93,9 +92,10 @@ acfRes_pm <- acf(average_pm)
 acfRes_asthma <- acf(adult_asthma)
 ```
 
-Below, I am looking at cross-correlation between both `adult_asthma` and `average_pm` series at once, to see if there is any cross-correlation between the two time series.
+Next, I am looking at cross-correlation between both `adult_asthma` and `average_pm` series at once, to see if there is any causal relationship between the two time series variables.
 
 ```{r}
 ccfRes <- ccf(adult_asthma, average_pm, ylab = "cross-correlation")
 ```
+
 
