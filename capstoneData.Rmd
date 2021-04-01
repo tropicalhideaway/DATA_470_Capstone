@@ -5,7 +5,11 @@ class: "DATA 470"
 output: html_notebook
 ---
 
-# Introduction of project
+## Abstract
+
+Air quality and asthma, among other respiratory illnesses, are a continued struggle for many communities. In addition, the continued growth of the national and global population warrants our nation's pollution to continue to increase. This, in turn, will give to a worsening in respiratory conditions and an increase of respiratory troubles, such as asthma. Using data provided by the CDC National Environmental Public Health Tracking Network Query Tool, statistical analysis was used to see if there is a relationship between the average number of days above PM2.5 standard levels nationally and the percent of adults diagnosed with asthma who report they currently have asthma nationally through the period of 2011 to 2016. The variables were looked at both individually and against each other with the period established using the statistical tool R. Basic statistical analysis and time series modeling were used as a way of testing for a relationship between air quality and asthma. 
+
+### Introduction of project
 
 My goal of this time series analysis is to explore if there is any correlation between numerical percentage of national average PM2.5 levels and the numerical percentage of national adults currently reporting asthma between the years 2011 to 2016.
 
