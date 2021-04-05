@@ -1,5 +1,5 @@
 ---
-title: "National Air Quality and Its Affects on Adult Asthma, A Time Series Analysis"
+title: "National Air Quality and Its Effects on Adult Asthma, A Time Series Analysis"
 name: "Rebecca Madsen"
 class: "DATA 470"
 output: html_notebook
@@ -39,28 +39,61 @@ Below I am using some basic R codes to explore the dataset.
 str(asthma_pmlevel)
 ```
 
+
 Above is general structure information about the data I am going to explore for my time series analysis of adult asthma and air quality. Next, I ran the summary statistics of the dataset for each variable (as seen below). However, the three variables I want to focus on are `Year`, `Asthma`, and `AvgPM2.5` for this analysis. 
 
 ```{r}
 summary(asthma_pmlevel)
 ```
 
+```{r}
+ggplot(asthma_pmlevel, aes(y = Asthma, x = AvgPM2.5)) +
+    geom_point()
+```
+
+Above, we can see there is right-skewedness from both the variables `AvgPM2.5` and `Asthma`. Filtering the variable `AvgPM2.5` variable below, to eliminate the outliers beyond 0.008.
+
+```{r}
+asthma_pmtrans <- filter(asthma_pmlevel, AvgPM2.5 > 0.0 & AvgPM2.5 < 0.08)
+asthma_pmtrans
+```
+
+```{r}
+ggplot(asthma_pmtrans, aes(y = Asthma, x = AvgPM2.5)) +
+    geom_point() +
+    geom_smooth(method = "lm")
+```
+
+I filtered the variable for `AvgPM2.5` which helped with some of the skewedness from outliers beyond 0.15 but there still seems to be some right-skew in the dataset. Next I am filtering the variable `Asthma` to eliminate outliers from before 0.07.
+
+```{r}
+asthmatrans_pmfilter <- filter(asthma_pmtrans, Asthma > 0.07)
+asthmatrans_pmfilter
+```
+
+```{r}
+ggplot(asthmatrans_pmfilter, aes(y = Asthma, x = AvgPM2.5)) +
+    geom_point() +
+    geom_smooth(method = "lm")
+```
+
+
 ## Beginning Time Series Analysis
 
 First, I want to see if there is any association between the variables `Asthma` and `AvgPM2.5` separately with time between 2011 to 2016. 
 
 ```{r}
-adult_asthma <- ts(asthma_pmlevel$Asthma, start= 2011, end= 2016, frequency= 1)
+adult_asthma <- ts(asthmatrans_pmfilter$Asthma, start= 2011, end= 2016, frequency= 1)
 plot(adult_asthma)
 
-average_pm <- ts(asthma_pmlevel$AvgPM2.5, start = 2011, end = 2016, frequency = 1)
+average_pm <- ts(asthmatrans_pmfilter$AvgPM2.5, start = 2011, end = 2016, frequency = 1)
 plot(average_pm)
 ```
 Above we are looking at two trend lines: the percent of adults with asthma and the average days of PM2.5 levels above standard separately against time. 
 
-* Starting with the `adult_asthma` plot, we see a positive trend across time that tells us the numerical percentage of adults with currently reported increased from 2011 to 2016.
+* Starting with the `adult_asthma` plot, we see a positive increase from 2011 to 2012, a plateau from 2012 to 2013, then a sharp decrease from 2013 to 2014, then a smaller increase between 2014 and 2015 before plateauing from 2015 to 2016. Across time, this tells us the numerical percentage of adults with currently reported slightly decrease from 2011 to 2016.
 
-* Next, looking at `average_pm` we see a decrease in numerical percentage of days above national levels for PM2.5 particles from 2011 to 2012, then a plateau between 2012 to 2014, then a sharp increase from 2014 to 2016.
+* Next, looking at `average_pm` we see a plateau in numerical percentage of days above national levels for PM2.5 particles from 2011 to 2013, then a increase from 2013 to 2016. Across time, this tells us that there was an increase in number of average days above PM2.5 standards from 2011 to 2016. 
 
 ## More in-depth time series analysis
 
@@ -73,7 +106,8 @@ per_state <- ggplot(asthma_pmlevel, aes(y = AvgPM2.5, x = Asthma, color = State)
               geom_smooth(method = "lm")
 per_state
 ```
-This is a mess, and isn't helpful unless I wanted to see a trend for a specific state. That is not the focus of my project, but I did want to see if there was an averaged change at state levels. (for fun) It is too hard to tell, so I will ignore the findings of this graphic.
+Not using the dataset with the filtered variable `AvgPM2.5` I plotted the data with linear relationships per state. This is a mess, and isn't helpful unless I wanted to see a trend for a specific state. That is not the focus of my project, but I did want to see if there was an averaged change at state levels. (for fun) It is too hard to tell, so I will ignore the findings of this graphic.
+
 
 ## More time series looking at Adult Asthma and Average PM2.5 days
 
@@ -89,17 +123,25 @@ plot(fit_asthma)
 
 Using time series analysis, we also should look at creating lag. A lag of time series is created when any given number of periods in time are shifted. This is because the state of a period back in the time-line could still be affecting the current state of the time series. This will allow us to see if an earlier year is affecting a later year in our time series.
 
-Below, I am looking at an autocorrelation for both `average_pm` and `adult_asthma` separately. The autocorrelation is looking at lag in itself for each variable to check for any correlation. Since both time series fall to 0 fairly quickly, we can assume that they are both stationary time series respectfully.
+Below, I am looking at an autocorrelation for both `average_pm` and `adult_asthma` separately. The autocorrelation is looking at lag in itself for each variable to check for any correlation. The `average_pm` time series doesn't fall to 0 quickly telling us it is stationary with time. However, `adult_asthma` does fall fairly quickly to 0 in lag, telling us it is not stationary with time. Since both time series cross the positive blue dashed line, there is a correlation from that specific lag with the current series.
 
 ```{r}
 acfRes_pm <- acf(average_pm)
 acfRes_asthma <- acf(adult_asthma)
 ```
 
-Next, I am looking at cross-correlation between both `adult_asthma` and `average_pm` series at once, to see if there is any causal relationship between the two time series variables.
+Next, I am looking at cross-correlation between both `adult_asthma` and `average_pm` series at once, to see if there is any causal relationship between the two time series variables. With cross-correlation, the closer the value is to 1 (either -1.0 or +0.1) the closer the sets are to being identical.
 
 ```{r}
 ccfRes <- ccf(adult_asthma, average_pm, ylab = "cross-correlation")
 ```
 
+
+#### Resources
+
+https://ephtracking.cdc.gov/DataExplorer/
+http://r-statistics.co/Time-Series-Analysis-With-R.html
+https://www.statmethods.net/advstats/timeseries.html
+https://www.investopedia.com/terms/c/crosscorrelation.asp
+https://cran.r-project.org/web/views/TimeSeries.html
 
