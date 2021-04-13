@@ -76,7 +76,26 @@ ggplot(asthmatrans_pmfilter, aes(y = Asthma, x = AvgPM2.5)) +
     geom_point() +
     geom_smooth(method = "lm")
 ```
+It helped a little, showing a slight negative trend. However, it is not enough to say there is a negative relationship between the two variables. 
 
+Next, I transformed the variable `AvgPM2.5`, using the log function since it appears to be rightly skewed. I then used the tidy function to get the values and plotted the transformed data on a scatter plot along with a linear model fit. 
+
+```{r}
+asthma_pm_lm <- lm(log(AvgPM2.5) ~ Asthma, data = asthmatrans_pmfilter)
+asthma_pm_lm_tidy <- tidy(asthma_pm_lm, conf.int = TRUE)
+asthma_pm_lm_tidy
+```
+
+```{r}
+#LAsthma <- log(asthma_pmlevel$Asthma)
+LPM <- log(asthma_pmlevel$AvgPM2.5)
+
+ggplot(asthma_pmlevel, aes(y = Asthma, x = LPM)) +
+  geom_point() +
+    geom_smooth(method = "lm")
+```
+
+This still gave us no association between the transformed variables of `AvgPM2.5` and the variable `Asthma`. The intercept p-value of 3.106e-07 tells us there is some significance when the intercept of `AvgPM2.5` is compared to `Asthma` unlike `Asthma` by itself which gives a p-value of 7.81e-01.
 
 ## Beginning Time Series Analysis
 
@@ -138,15 +157,24 @@ ccfRes <- ccf(adult_asthma, average_pm, ylab = "cross-correlation")
 
 As we can see above, the lags for the cross-correlation are not very close to 1 but to 0, telling us that the two time series are not identical. The points of lag also do not cross the dashed blue line, telling us there is no correlation between the two time series. 
 
+
 ## Conclusion and Discussion
 
+Through a time series analysis, I found that there is no correlation between the percent of adults diagnosed with asthma stating it is still present and the percent of days above the standard PM2.5 levels. 
 
 
 #### Resources
 
+
 https://ephtracking.cdc.gov/DataExplorer/
+
 http://r-statistics.co/Time-Series-Analysis-With-R.html
+
 https://www.statmethods.net/advstats/timeseries.html
+
 https://www.investopedia.com/terms/c/crosscorrelation.asp
+
 https://cran.r-project.org/web/views/TimeSeries.html
+
+https://stat.ethz.ch/R-manual/R-devel/library/stats/html/HoltWinters.html
 
