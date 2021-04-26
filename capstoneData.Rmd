@@ -9,9 +9,11 @@ output: html_notebook
 
 Air quality and asthma, among other respiratory illnesses, are a continued struggle for many communities. In addition, the continued growth of the national and global population warrants our nation's pollution to continue to increase. This, in turn, will give to a worsening in respiratory conditions and an increase of respiratory troubles, such as asthma. Using data provided by the CDC National Environmental Public Health Tracking Network Query Tool, statistical analysis was used to see if there is a relationship between the average number of days above PM2.5 standard levels nationally and the percent of adults diagnosed with asthma who report they currently have asthma nationally through the period of 2011 to 2016. The variables were looked at both individually and against each other with the period established using the statistical tool R. Basic statistical analysis and time series modeling were used as a way of testing for a relationship between air quality and asthma. 
 
-### Introduction of project
+### Introduction
 
-My goal of this time series analysis is to explore if there is any correlation between numerical percentage of national average PM2.5 levels and the numerical percentage of national adults currently reporting asthma between the years 2011 to 2016.
+Respiratory Illnesses are greatly affected by high pollution, making it one of the greatest problems that the modern world faces. (CDC, 2017) Asthma being one of the biggest and more commonly known respiratory illness is greatly affected by the air quality. Particles that have a diameter that measures 2.5 micrometers, and remain suspended longer in the air which causes pollution. These are particles that come from the burning of fuel and chemical reactions, worsening the air quality around us. (Airveda, 2017) Airveda explains that "exposure to PM2.5 has multiple short term and long term health impacts. Short term include irritation in the eyes, nose and throat, coughing, sneezing and shortness of breath. A prolonged exposure to PM2.5 can cause permanent respiratory problems such as asthma, chronic bronchitis and heart disease." (Airveda, 2017) The CDC is using its own national tracking network to follow many environmental and public health risks. This tracking tool includes information on both asthma and PM2.5 particulates at a national level. 
+
+Using the CDC tracking network, I downloaded data on the percent of adults diagnosed with asthma nationally and the average days of PM2.5 levels above the standard nationally. My goal of this time series analysis is to explore if there is any correlation between numerical percentage of national average PM2.5 levels and the numerical percentage of national adults currently reporting asthma between the years 2011 to 2016. 
 
 ```{r}
 library(mosaic)
@@ -20,7 +22,6 @@ library(tidyverse)
 library(openintro)
 library(Stat2Data)
 library(car)
-library(lme4)
 
 
 library(readr)
@@ -29,9 +30,9 @@ View(asthma_pmlevel)
 ```
 
 
-Since I am using time series analysis, I will need to upload and run a few packages to make this analysis possible. CRAN gives us a huge set of public packages, and happens to have some great packages that can be used in time series analysis. Since R already has basic time series installed because of CRAN, we will be using those to explore the data between the years of 2011 to 2016. I also added the `lme4` library for multi-level analysis if possibly needed.
+Since I am using time series analysis, I will need to upload and run a few packages to make this analysis possible. CRAN gives us a huge set of public packages, and happens to have some great packages that can be used in time series analysis. Since R already has basic time series installed because of CRAN, we will be using those to explore the data between the years of 2011 to 2016. 
 
-## Exploring the dataset
+### Methods
 
 Below I am using some basic R codes to explore the dataset.
 
@@ -97,7 +98,7 @@ ggplot(asthma_pmlevel, aes(y = Asthma, x = LPM)) +
 
 This still gave us no association between the transformed variables of `AvgPM2.5` and the variable `Asthma`. The intercept p-value of 3.106e-07 tells us there is some significance when the intercept of `AvgPM2.5` is compared to `Asthma` unlike `Asthma` by itself which gives a p-value of 7.81e-01.
 
-## Beginning Time Series Analysis
+#### Beginning Time Series Analysis
 
 First, I want to see if there is any association between the variables `Asthma` and `AvgPM2.5` separately with time between 2011 to 2016. 
 
@@ -114,23 +115,7 @@ Above we are looking at two trend lines: the percent of adults with asthma and t
 
 * Next, looking at `average_pm` we see a plateau in numerical percentage of days above national levels for PM2.5 particles from 2011 to 2013, then a increase from 2013 to 2016. Across time, this tells us that there was an increase in number of average days above PM2.5 standards from 2011 to 2016. 
 
-## More in-depth time series analysis
-
-
-### Looking at asthma_pmlevel with states
-
-```{r}
-per_state <- ggplot(asthma_pmlevel, aes(y = AvgPM2.5, x = Asthma, color = State)) +
-                geom_point() +
-              geom_smooth(method = "lm")
-per_state
-```
-Not using the dataset with the filtered variable `AvgPM2.5` I plotted the data with linear relationships per state. This is a mess, and isn't helpful unless I wanted to see a trend for a specific state. That is not the focus of my project, but I did want to see if there was an averaged change at state levels. (for fun) It is too hard to tell, so I will ignore the findings of this graphic.
-
-
-## More time series looking at Adult Asthma and Average PM2.5 days
-
-Below I am using the `HoltWinters()`, a function to fit an exponential model for limiting the squared prediction error in time series forecasting, to the variables `average_pm` and `adult_asthma` separately. The red line is the exponential fit for the time series.
+Below I am using the `HoltWinters()`, a function to fit an exponential model for limiting the squared prediction error in time series forecasting, to the variables `average_pm` and `adult_asthma` separately. The red line is the exponential fit squared predicted error for the time series where the black line is the exponential fit for each time series.
 
 ```{r}
 fit_pm <- HoltWinters(average_pm, gamma=FALSE)
@@ -149,32 +134,45 @@ acfRes_pm <- acf(average_pm)
 acfRes_asthma <- acf(adult_asthma)
 ```
 
-Next, I am looking at cross-correlation between both `adult_asthma` and `average_pm` series at once, to see if there is any causal relationship between the two time series variables. With cross-correlation, the closer the value is to 1 (either -1.0 or +0.1) the closer the sets are to being identical.
+Lastly, I am looking at cross-correlation between both `adult_asthma` and `average_pm` series at once, to see if there is any causal relationship between the two time series variables. With cross-correlation, the closer the value is to 1 (either -1.0 or +0.1) the closer the sets are to being identical.
 
 ```{r}
 ccfRes <- ccf(adult_asthma, average_pm, ylab = "cross-correlation")
 ```
 
+### Results
+
 As we can see above, the lags for the cross-correlation are not very close to 1 but to 0, telling us that the two time series are not identical. The points of lag also do not cross the dashed blue line, telling us there is no correlation between the two time series. 
 
 
-## Conclusion and Discussion
+### Discussion/Conclusion
 
-Through a time series analysis, I found that there is no correlation between the percent of adults diagnosed with asthma stating it is still present and the percent of days above the standard PM2.5 levels. 
+Through a time series analysis, I found that there is no relationship between the percent of adults diagnosed with asthma stating it is still present and the percent of days above the standard PM2.5 levels through the years of 2011 to 2016. 
+
+Beginning with the Holts-Winter exponential fits, we see a forecasting for each individual variable. The `fit_pm` graph shows overall positive association with the time period 2011-2016. The black line shows the exponential fit and the red line represents the standard predictor error, used for forecasting. From this, one can say there is the possibility of an increase in days above standard PM2.5 particulates nationally. The `fit_asthma` graph shows a more decrease and plateau for the exponential fit black line and a sharp decrease then slight increase of the standard predictor error shown as the red line. From this, one can say that the number of adults diagnosed with asthma that still currently report it nationally has neither an increase nor decrease. 
+
+Next, the first spikes on the separate auto-correlations of the time-series variables `Asthma` and `PM2.5` shows a significant time lag for that year. (2011 starting at 0 going to 2016 at 5) The other spikes fall closer to zero, giving no significant time lag for the years 2012-2016. However, this only explains the two variables separately against a time correlation.
+
+The cross-correlation `ccfRes` graph above tells us there is no association between `Asthma` and `PM2.5` because of the lags (spikes) not crossing the dashed blue lines. If the lags had crossed the dashed lines, we could see more significant association between the two time-series variables. One can also see that there is no correlation from each of the lags being close to zero, telling us there is no correlation between the two time-series variables for the years 2001 to 2016. 
+
+Further statistical and time series analysis would be needed to explore a deeper look at the variables used, with a more in-depth time series and possible higher level analysis with a larger period if available.
 
 
-#### Resources
 
+#### Bibliography/Citation
 
-https://ephtracking.cdc.gov/DataExplorer/
+Centers for Disease Control and Prevention. (2017, June 22). Rural and Urban Differences in Air Quality, 2008–2012, and Community Drinking Water Quality, 2010–2015 - United States. Centers for Disease Control and Prevention. https://www.cdc.gov/mmwr/volumes/66/ss/ss6613a1.htm. 
 
-http://r-statistics.co/Time-Series-Analysis-With-R.html
+Centers for Disease Control and Prevention. (n.d.). National Environmental Public Health Tracking Network Query Tool. Centers for Disease Control and Prevention. https://ephtracking.cdc.gov/DataExplorer/. 
 
-https://www.statmethods.net/advstats/timeseries.html
+Hayes, A. (2020, November 11). What Is Cross-Correlation? Investopedia. https://www.investopedia.com/terms/c/crosscorrelation.asp. 
 
-https://www.investopedia.com/terms/c/crosscorrelation.asp
+Prabhakaran, S. (n.d.). if(typeof __ez_fad_position != 'undefined'){__ez_fad_position('div-gpt-ad-r_statistics_co-box-3-0')};Time Series Analysis. Time Series Analysis With R. http://r-statistics.co/Time-Series-Analysis-With-R.html. 
 
-https://cran.r-project.org/web/views/TimeSeries.html
+R: Holt-Winters Filtering. (n.d.). https://stat.ethz.ch/R-manual/R-devel/library/stats/html/HoltWinters.html. 
 
-https://stat.ethz.ch/R-manual/R-devel/library/stats/html/HoltWinters.html
+robk@statmethods.net, R. K.-. (n.d.). Time Series and Forecasting. Quick-R: Time Series. https://www.statmethods.net/advstats/timeseries.html. 
+
+What Is PM2.5 and Why Is It Important?20. airveda. (2017). https://www.airveda.com/blog/what-is-pm2-5-and-why-is-it-important#:~:text=Dust%2C%20spores%20and%20pollen%20are,take%20place%20in%20the%20atmosphere.
+
 
